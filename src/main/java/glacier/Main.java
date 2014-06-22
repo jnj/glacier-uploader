@@ -21,16 +21,12 @@ import java.util.List;
 import java.util.logging.LogManager;
 
 public class Main {
-    private static final Logger log = LoggerFactory.getLogger(Main.class);
-
     public static void main(String[] args) throws IOException {
         try {
             LogManager.getLogManager().readConfiguration(Thread.currentThread().getContextClassLoader().getResourceAsStream("logging.properties"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        log.info("Starting...");
-        System.exit(0);
 
         Uploader uploader = new Uploader();
         FileChooser.createAndShowGUI(new Handler(uploader));
@@ -96,10 +92,6 @@ class Uploader {
     }
 
     public void upload(File archive, String vaultName) {
-        if (true) {
-            log.info(archive.getAbsolutePath() + " : " + vaultName);
-            return;
-        }
         try {
             ArchiveTransferManager atm = new ArchiveTransferManager(client, credentials);
             UploadResult result = atm.upload("-", vaultName, archive.toString(), archive, new ProgressListener() {
