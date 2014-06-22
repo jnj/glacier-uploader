@@ -7,6 +7,8 @@ import com.amazonaws.event.ProgressListener;
 import com.amazonaws.services.glacier.AmazonGlacierClient;
 import com.amazonaws.services.glacier.transfer.ArchiveTransferManager;
 import com.amazonaws.services.glacier.transfer.UploadResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,9 +18,20 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.LogManager;
 
 public class Main {
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
+
     public static void main(String[] args) throws IOException {
+        try {
+            LogManager.getLogManager().readConfiguration(Thread.currentThread().getContextClassLoader().getResourceAsStream("logging.properties"));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        log.info("Starting...");
+        System.exit(0);
+
         Uploader uploader = new Uploader();
         FileChooser.createAndShowGUI(new Handler(uploader));
     }
@@ -67,6 +80,8 @@ class FileChooser extends JPanel implements ActionListener {
 }
 
 class Uploader {
+
+    private static final Logger log = LoggerFactory.getLogger(Uploader.class.getSimpleName());
     private final AWSCredentials credentials;
     private final AmazonGlacierClient client;
 
@@ -81,17 +96,18 @@ class Uploader {
     }
 
     public void upload(File archive, String vaultName) {
+        if (true) {
+            log.info(archive.getAbsolutePath() + " : " + vaultName);
+            return;
+        }
         try {
             ArchiveTransferManager atm = new ArchiveTransferManager(client, credentials);
-            final long bytesToTransfer = archive.length();
             UploadResult result = atm.upload("-", vaultName, archive.toString(), archive, new ProgressListener() {
                 @Override
                 public void progressChanged(ProgressEvent progressEvent) {
-//                    double percent = 100.0 * progressEvent.getBytesTransferred() / bytesToTransfer;
-//                    System.out.println(String.format("%.2f percent done", percent));
                 }
             });
-            System.out.println("Archive ID: " + result.getArchiveId());
+            log.info(String.format("%s|%s", archive.getAbsolutePath(), result.getArchiveId()));
         } catch (Exception e) {
             System.err.println(e);
         }
